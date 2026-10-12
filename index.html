@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f97316"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Lingua">
+  <meta name="description" content="Aprende alemán con tarjetas sencillas, tests y repasos.">
+  <link rel="manifest" href="./manifest.json"><link rel="apple-touch-icon" href="./icons/icon-192.png"><link rel="icon" type="image/png" href="./icons/icon-192.png"><link rel="stylesheet" href="./style.css">
+  <title>Lingua — alemán a tu ritmo</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" id="brandHome" aria-label="Lingua, inicio"><span class="brand-mark">L</span><span>lingua<span class="brand-dot">.</span></span></a>
+      <div class="top-actions"><span class="level-pill">DE · A1</span><button id="exportBtn" hidden type="button" aria-hidden="true"></button><button id="importBtn" hidden type="button" aria-hidden="true"></button><input id="importFile" type="file" accept=".json,application/json" hidden><button id="themeToggle" class="icon-button" aria-label="Cambiar tema" title="Cambiar tema">◐</button></div>
+    </header>
+    <main>
+      <section id="homeView" class="view home-view">
+        <div class="welcome"><p class="eyebrow">DEUTSCH LERNEN · A1</p><h1>Un poco cada día<span>.</span></h1><p>Tu alemán, paso a paso. ¿Qué hacemos hoy?</p></div>
+        <section class="stats-grid" aria-label="Tu progreso">
+          <article class="stat-card"><span class="stat-label">PALABRAS</span><strong id="totalStat">0</strong></article>
+          <article class="stat-card"><span class="stat-label">ACIERTOS</span><strong id="accuracyStat">—</strong></article>
+          <article class="stat-card"><span class="stat-label">ERRORES</span><strong id="errorsStat">0</strong></article>
+        </section>
+        <div class="home-grid" aria-label="Opciones principales">
+          <button class="home-option option-test" data-go="study"><span class="option-icon">✓</span><span class="option-copy"><strong>Test</strong><small>Practica y comprueba lo que sabes</small></span><span class="option-arrow">↗</span></button>
+          <button class="home-option option-errors" data-go="errors"><span class="option-icon">↻</span><span class="option-copy"><strong>Errores</strong><small>Vuelve a las palabras que fallaste</small></span><span class="option-arrow">↗</span></button>
+          <button class="home-option option-add" data-go="add"><span class="option-icon">＋</span><span class="option-copy"><strong>Añadir</strong><small>Guarda palabras y expresiones nuevas</small></span><span class="option-arrow">↗</span></button>
+          <button class="home-option option-words" data-go="cards"><span class="option-icon">▤</span><span class="option-copy"><strong>Palabras</strong><small>Explora todo tu vocabulario</small></span><span class="option-arrow">↗</span></button>
+        </div>
+        <div class="home-bottom"><span class="orange-dot"></span><span>Una tarjeta cada vez. Fortschritt zählt.</span></div>
+      </section>
+
+      <section id="studyView" class="view" hidden>
+        <div class="page-heading"><button class="back-button" data-go="home">← Inicio</button><p class="eyebrow" id="studyEyebrow">MODO TEST</p><h2 id="studyTitle">Translate the words</h2><p class="page-subtitle">Escribe la traducción y comprueba tu respuesta.</p></div>
+        <div class="study-controls"><span id="progressText" class="progress-text">0 / 0</span><div class="study-actions"><select id="studyMode" hidden><option value="all">Todas</option><option value="errors">Errores</option></select><button id="shuffleBtn" class="subtle-button">↻ Barajar</button></div></div>
+        <div id="studyEmpty" class="empty-state"><div class="empty-illustration">✦</div><h3>Tu primera tarjeta te espera</h3><p>Añade una palabra o frase para empezar a practicar.</p><button class="primary-button" data-go="add">Añadir primera palabra →</button></div>
+        <article id="quizCard" class="quiz-card" hidden>
+          <div class="card-topline"><span class="language-pill">ESPAÑOL → ALEMÁN</span><span id="cardPosition" class="muted">1</span></div>
+          <div class="prompt-wrap"><p id="promptText" class="prompt-text"></p><p id="promptHint" class="prompt-hint">¿Cómo se dice en alemán?</p></div>
+          <form id="answerForm" autocomplete="off"><label for="answerInput" class="input-label">TU RESPUESTA</label><div class="answer-row"><input id="answerInput" type="text" placeholder="Escribe la traducción…" autocapitalize="off" spellcheck="false" required><button id="checkBtn" class="primary-button" type="submit">Comprobar</button></div></form>
+          <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+          <div class="quiz-footer"><span id="sessionScore">0 aciertos · 0 fallos</span><button id="nextBtn" class="next-button" hidden>Siguiente →</button></div>
+        </article>
+        <div class="study-bottom"><span class="orange-dot"></span><span>Sin prisa. Lo importante es recordarlo.</span></div>
+      </section>
+
+      <section id="cardsView" class="view" hidden>
+        <div class="page-heading"><button class="back-button" data-go="home">← Inicio</button><p class="eyebrow">TU VOCABULARIO</p><h2>Palabras</h2><p class="page-subtitle">Todo lo que estás aprendiendo, en un solo sitio.</p></div>
+        <div class="list-toolbar"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar palabra o traducción…" aria-label="Buscar tarjetas"></div><button class="primary-button compact" data-go="add">＋ Añadir</button></div>
+        <div id="cardsEmpty" class="empty-state small-empty"><div class="empty-illustration">▤</div><h3>Aún no hay palabras</h3><p>Importa el Excel A1 o añade tu primera palabra.</p><button class="primary-button" data-go="add">Empezar →</button></div>
+        <div id="cardList" class="card-list"></div>
+      </section>
+
+      <section id="addView" class="view" hidden>
+        <div class="page-heading"><button class="back-button" data-go="home">← Inicio</button><p class="eyebrow">CRECE TU VOCABULARIO</p><h2 id="formTitle">Añadir palabra</h2><p class="page-subtitle">Guárdala y aparecerá en tus tarjetas.</p></div>
+        <div class="editor-card import-card"><div class="import-head"><span class="import-icon">⇧</span><div><h3>Tu Excel de alemán A1</h3><p class="form-hint">Importa el Excel que está junto a la app en GitHub, o elige otro archivo.</p></div></div><input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden><div class="form-actions"><button id="excelImportBtn" class="primary-button" type="button">Cargar Excel</button><button id="excelChooseBtn" class="subtle-button" type="button">Elegir archivo</button></div></div>
+        <form id="cardForm" class="editor-card word-form"><input id="editId" type="hidden"><label for="spanishInput">ESPAÑOL <span>01</span></label><textarea id="spanishInput" rows="2" placeholder="Ej. Buenos días" required maxlength="500"></textarea><label for="translationInput">ALEMÁN <span>02</span></label><textarea id="translationInput" rows="2" placeholder="Ej. Guten Morgen" required maxlength="500"></textarea><p class="form-hint">Se guarda al instante en esta app.</p><div class="form-actions"><button id="cancelEditBtn" type="button" class="subtle-button" hidden>Cancelar</button><button type="submit" class="primary-button" id="saveCardBtn">Guardar palabra →</button></div></form>
+        <div class="editor-card excel-export"><div><h3>Mantener actualizado el Excel</h3><p class="form-hint">Descarga una copia con todas las palabras actuales, incluidas las nuevas.</p></div><button id="exportExcelBtn" class="subtle-button" type="button">Descargar Excel actualizado ↓</button></div>
+        <p class="privacy-note">Nota: la app puede guardar palabras en tu dispositivo, pero GitHub Pages no permite sobrescribir el Excel publicado directamente desde el navegador. Descarga el Excel actualizado y súbelo a GitHub cuando quieras actualizar el archivo online.</p>
+      </section>
+    </main>
+    <footer><span>LINGUA<span class="brand-dot">.</span> DEUTSCH A1</span><span id="saveStatus">Guardado en este dispositivo</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script><script src="./script.js" defer></script>
+  <script>
+  (()=>{
+    const button=document.getElementById('excelImportBtn'), choose=document.getElementById('excelChooseBtn'), picker=document.getElementById('excelFile');
+    const storageKey='lingua.cards.v1', bundledExcel='./vocabulario_aleman_A1_lingua.xlsx';
+    const cleanHeader=v=>String(v??'').trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    button.addEventListener('click',async()=>{button.disabled=true;try{const response=await fetch(bundledExcel,{cache:'no-store'});if(!response.ok)throw new Error('No encuentro el Excel publicado junto a index.html. Puedes elegirlo manualmente.');await importWorkbook(await response.arrayBuffer());}catch(e){alert(e.message||'No se ha podido cargar el Excel.');}finally{button.disabled=false;}});
+    choose.addEventListener('click',()=>picker.click());picker.addEventListener('change',async()=>{const f=picker.files?.[0];if(!f)return;try{await importWorkbook(await f.arrayBuffer());}catch(e){alert(e.message||'No se ha podido leer el Excel.');}finally{picker.value='';}});
+    async function importWorkbook(buffer){if(!window.XLSX)throw new Error('El lector de Excel necesita conexión. Comprueba internet y vuelve a intentarlo.');const wb=XLSX.read(buffer,{type:'array'}),sheet=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});if(!rows.length)throw new Error('El Excel está vacío.');const headers=rows[0].map(cleanHeader);let es=headers.findIndex(h=>['espanol','spanish','es'].includes(h)),de=headers.findIndex(h=>['aleman','german','deutsch','de'].includes(h)),start=1;if(es<0||de<0||es===de){es=0;de=1;start=['espanol','spanish'].includes(headers[0])?1:0;}const imported=rows.slice(start).map(r=>({spanish:String(r[es]??'').trim(),translation:String(r[de]??'').trim()})).filter(x=>x.spanish&&x.translation);if(!imported.length)throw new Error('No encuentro palabras válidas. Usa columnas Español y Alemán.');let existing=[];try{existing=JSON.parse(localStorage.getItem(storageKey)||'[]')}catch{}const seen=new Set(existing.map(c=>cleanHeader(c.spanish)+'|'+cleanHeader(c.translation)));const fresh=imported.filter(c=>{const k=cleanHeader(c.spanish)+'|'+cleanHeader(c.translation);if(seen.has(k))return false;seen.add(k);return true;}).map(c=>({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),spanish:c.spanish.slice(0,500),translation:c.translation.slice(0,500)}));if(!fresh.length){alert('Todas las palabras del Excel ya están cargadas.');return;}localStorage.setItem(storageKey,JSON.stringify([...existing,...fresh]));alert(`Importación completada: ${fresh.length} palabras nuevas. Se han omitido los duplicados.`);location.reload();}
+  })();
+  </script>
+</body></html>
