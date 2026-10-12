@@ -11,7 +11,7 @@
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="./" id="brandHome" aria-label="Lingua, inicio"><span class="brand-mark">L</span><span>lingua<span class="brand-dot">.</span></span></a>
-      <div class="top-actions"><span class="level-pill">DE · A1</span><button id="exportBtn" hidden type="button" aria-hidden="true"></button><button id="importBtn" hidden type="button" aria-hidden="true"></button><input id="importFile" type="file" accept=".json,application/json" hidden><button id="themeToggle" class="icon-button" aria-label="Cambiar tema" title="Cambiar tema">◐</button></div>
+      <div class="top-actions"><button id="languageToggle" class="language-toggle" type="button" aria-label="Cambiar idioma de aprendizaje">DE · A1 ▾</button><button id="exportBtn" hidden type="button" aria-hidden="true"></button><button id="importBtn" hidden type="button" aria-hidden="true"></button><input id="importFile" type="file" accept=".json,application/json" hidden><button id="themeToggle" class="icon-button" aria-label="Cambiar tema" title="Cambiar tema">◐</button></div>
     </header>
     <main>
       <section id="homeView" class="view home-view">
@@ -53,7 +53,7 @@
 
       <section id="addView" class="view" hidden>
         <div class="page-heading"><button class="back-button" data-go="home">← Inicio</button><p class="eyebrow">CRECE TU VOCABULARIO</p><h2 id="formTitle">Añadir palabra</h2><p class="page-subtitle">Guárdala y aparecerá en tus tarjetas.</p></div>
-        <div class="editor-card import-card"><div class="import-head"><span class="import-icon">⇧</span><div><h3>Tu Excel de alemán A1</h3><p class="form-hint">Importa el Excel que está junto a la app en GitHub, o elige otro archivo.</p></div></div><input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden><div class="form-actions"><button id="excelImportBtn" class="primary-button" type="button">Cargar Excel</button><button id="excelChooseBtn" class="subtle-button" type="button">Elegir archivo</button></div></div>
+        <div class="editor-card import-card"><div class="import-head"><span class="import-icon">⇧</span><div><h3 id="excelTitle">Tu Excel de alemán A1</h3><p class="form-hint">Importa el Excel del idioma seleccionado que está junto a la app en GitHub, o elige otro archivo.</p></div></div><input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden><div class="form-actions"><button id="excelImportBtn" class="primary-button" type="button">Cargar Excel</button><button id="excelChooseBtn" class="subtle-button" type="button">Elegir archivo</button></div></div>
         <form id="cardForm" class="editor-card word-form"><input id="editId" type="hidden"><label for="spanishInput">ESPAÑOL <span>01</span></label><textarea id="spanishInput" rows="2" placeholder="Ej. Buenos días" required maxlength="500"></textarea><label for="translationInput">ALEMÁN <span>02</span></label><textarea id="translationInput" rows="2" placeholder="Ej. Guten Morgen" required maxlength="500"></textarea><p class="form-hint">Se guarda al instante en esta app.</p><div class="form-actions"><button id="cancelEditBtn" type="button" class="subtle-button" hidden>Cancelar</button><button type="submit" class="primary-button" id="saveCardBtn">Guardar palabra →</button></div></form>
         <div class="editor-card excel-export"><div><h3>Mantener actualizado el Excel</h3><p class="form-hint">Descarga una copia con todas las palabras actuales, incluidas las nuevas.</p></div><button id="exportExcelBtn" class="subtle-button" type="button">Descargar Excel actualizado ↓</button></div>
         <p class="privacy-note">Nota: la app puede guardar palabras en tu dispositivo, pero GitHub Pages no permite sobrescribir el Excel publicado directamente desde el navegador. Descarga el Excel actualizado y súbelo a GitHub cuando quieras actualizar el archivo online.</p>
@@ -66,11 +66,45 @@
   <script>
   (()=>{
     const button=document.getElementById('excelImportBtn'), choose=document.getElementById('excelChooseBtn'), picker=document.getElementById('excelFile');
-    const storageKey='lingua.cards.v1', bundledExcel='./vocabulario_aleman_A1_lingua.xlsx';
+    const lang=localStorage.getItem('lingua.language.v1')==='en'?'en':'de'; const storageKey=lang==='en'?'lingua.cards.en.v1':'lingua.cards.de.v1', bundledExcel=lang==='en'?'vocabulario_ingles_A1_lingua.xlsx':'vocabulario_aleman_A1_lingua.xlsx';
     const cleanHeader=v=>String(v??'').trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    button.addEventListener('click',async()=>{button.disabled=true;try{const response=await fetch(bundledExcel,{cache:'no-store'});if(!response.ok)throw new Error('No encuentro el Excel publicado junto a index.html. Puedes elegirlo manualmente.');await importWorkbook(await response.arrayBuffer());}catch(e){alert(e.message||'No se ha podido cargar el Excel.');}finally{button.disabled=false;}});
-    choose.addEventListener('click',()=>picker.click());picker.addEventListener('change',async()=>{const f=picker.files?.[0];if(!f)return;try{await importWorkbook(await f.arrayBuffer());}catch(e){alert(e.message||'No se ha podido leer el Excel.');}finally{picker.value='';}});
-    async function importWorkbook(buffer){if(!window.XLSX)throw new Error('El lector de Excel necesita conexión. Comprueba internet y vuelve a intentarlo.');const wb=XLSX.read(buffer,{type:'array'}),sheet=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});if(!rows.length)throw new Error('El Excel está vacío.');const headers=rows[0].map(cleanHeader);let es=headers.findIndex(h=>['espanol','spanish','es'].includes(h)),de=headers.findIndex(h=>['aleman','german','deutsch','de'].includes(h)),start=1;if(es<0||de<0||es===de){es=0;de=1;start=['espanol','spanish'].includes(headers[0])?1:0;}const imported=rows.slice(start).map(r=>({spanish:String(r[es]??'').trim(),translation:String(r[de]??'').trim()})).filter(x=>x.spanish&&x.translation);if(!imported.length)throw new Error('No encuentro palabras válidas. Usa columnas Español y Alemán.');let existing=[];try{existing=JSON.parse(localStorage.getItem(storageKey)||'[]')}catch{}const seen=new Set(existing.map(c=>cleanHeader(c.spanish)+'|'+cleanHeader(c.translation)));const fresh=imported.filter(c=>{const k=cleanHeader(c.spanish)+'|'+cleanHeader(c.translation);if(seen.has(k))return false;seen.add(k);return true;}).map(c=>({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),spanish:c.spanish.slice(0,500),translation:c.translation.slice(0,500)}));if(!fresh.length){alert('Todas las palabras del Excel ya están cargadas.');return;}localStorage.setItem(storageKey,JSON.stringify([...existing,...fresh]));alert(`Importación completada: ${fresh.length} palabras nuevas. Se han omitido los duplicados.`);location.reload();}
+    async function ensureXLSX(){
+      if(window.XLSX)return;
+      const urls=['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'];
+      for(const src of urls){try{await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>{s.remove();reject(new Error('No se pudo cargar el lector Excel'));};document.head.appendChild(s);});if(window.XLSX)return;}catch{}}
+      throw new Error('No se ha podido cargar el lector de Excel. Comprueba la conexión a internet e inténtalo de nuevo.');
+    }
+    button.addEventListener('click',async()=>{
+      button.disabled=true;button.textContent='Cargando…';
+      try{
+        await ensureXLSX();
+        const url=new URL(bundledExcel,document.baseURI);
+        const response=await fetch(url.href,{cache:'no-store'});
+        if(!response.ok)throw new Error('GitHub no encuentra el Excel en: '+url.pathname+' . Sube vocabulario_aleman_A1_lingua.xlsx a la misma carpeta que index.html, o pulsa «Elegir archivo».');
+        await importWorkbook(await response.arrayBuffer());
+      }catch(e){alert(e.message||'No se ha podido cargar el Excel.');if(/no encuentra el Excel/i.test(e.message))picker.click();}
+      finally{button.disabled=false;button.textContent='Cargar Excel';}
+    });
+    const langButton=document.getElementById('languageToggle'); if(langButton){langButton.textContent=lang==='en'?'EN · A1 ▾':'DE · A1 ▾'; langButton.addEventListener('click',()=>{localStorage.setItem('lingua.language.v1',lang==='en'?'de':'en');location.reload();});}
+    if(lang==='en'){document.documentElement.dataset.language='en';document.querySelector('meta[name="theme-color"]').content='#2563eb';document.title='Lingua — English at your pace';document.querySelector('.level-pill')?.remove();document.querySelector('.welcome .eyebrow').textContent='LEARN ENGLISH · A1';document.querySelector('.welcome h1').innerHTML='A little every day<span>.</span>';document.querySelector('.welcome>p:last-child').textContent='Your English, step by step. What shall we do today?';document.querySelectorAll('.home-option .option-copy strong')[0].textContent='Test';document.querySelectorAll('.home-option .option-copy small')[0].textContent='Practise and check what you know';document.querySelectorAll('.home-option .option-copy strong')[1].textContent='Mistakes';document.querySelectorAll('.home-option .option-copy small')[1].textContent='Review words you got wrong';document.querySelectorAll('.home-option .option-copy strong')[2].textContent='Add';document.querySelectorAll('.home-option .option-copy small')[2].textContent='Save new words and expressions';document.querySelectorAll('.home-option .option-copy strong')[3].textContent='Words';document.querySelectorAll('.home-option .option-copy small')[3].textContent='Explore all your vocabulary';document.querySelector('#studyTitle').textContent='Translate the words';document.querySelector('.page-subtitle').textContent='Type the translation and check your answer.';document.querySelector('.language-pill').textContent='SPANISH → ENGLISH';document.querySelector('.prompt-hint').textContent='How do you say it in English?';document.querySelector('.input-label').textContent='YOUR ANSWER';document.querySelector('#answerInput').placeholder='Type the translation…';document.querySelector('#checkBtn').textContent='Check';document.querySelector('#excelTitle').textContent='Your English A1 Excel';document.querySelector('#spanishInput').previousElementSibling.innerHTML='ESPAÑOL <span>01</span>';document.querySelector('#translationInput').previousElementSibling.innerHTML='INGLÉS <span>02</span>';document.querySelector('#spanishInput').placeholder='E.g. Buenos días';document.querySelector('#translationInput').placeholder='E.g. Good morning';document.querySelector('#saveCardBtn').textContent='Save word →';document.querySelector('#exportExcelBtn').textContent='Download updated Excel ↓';document.querySelector('.home-bottom span:last-child').textContent='One card at a time. Every step counts.';document.querySelector('footer span:first-child').innerHTML='LINGUA<span class="brand-dot">.</span> ENGLISH A1';}
+    choose.addEventListener('click',()=>picker.click());
+    picker.addEventListener('change',async()=>{const f=picker.files?.[0];if(!f)return;try{await ensureXLSX();await importWorkbook(await f.arrayBuffer());}catch(e){alert(e.message||'No se ha podido leer el Excel.');}finally{picker.value='';}});
+    async function importWorkbook(buffer){
+      await ensureXLSX();
+      const wb=XLSX.read(buffer,{type:'array'}),sheet=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
+      if(!rows.length)throw new Error('El Excel está vacío.');
+      const headers=rows[0].map(cleanHeader);
+      let es=headers.findIndex(h=>['espanol','spanish','es'].includes(h)),de=headers.findIndex(h=>['aleman','german','deutsch','de','english','inglés','ingles','en'].includes(h)),start=1;
+      if(es<0||de<0||es===de){es=0;de=1;start=['espanol','spanish','english','ingles','inglés','aleman','german'].includes(headers[0])?1:0;}
+      if(lang==='en'){const eng=headers.findIndex(h=>['english','ingles','inglés','en'].includes(h));const spa=headers.findIndex(h=>['espanol','spanish','es'].includes(h));if(eng>=0&&spa>=0){es=spa;de=eng;}}
+      const imported=rows.slice(start).map(r=>({spanish:String(r[es]??'').trim(),translation:String(r[de]??'').trim()})).filter(x=>x.spanish&&x.translation);
+      if(!imported.length)throw new Error('No encuentro palabras válidas. El Excel debe tener columnas Español y '+(lang==='en'?'English':'Alemán')+'.');
+      let existing=[];try{existing=JSON.parse(localStorage.getItem(storageKey)||'[]')}catch{}
+      const seen=new Set(existing.map(c=>cleanHeader(c.spanish)+'|'+cleanHeader(c.translation)));
+      const fresh=imported.filter(c=>{const k=cleanHeader(c.spanish)+'|'+cleanHeader(c.translation);if(seen.has(k))return false;seen.add(k);return true;}).map(c=>({id:window.crypto?.randomUUID?window.crypto.randomUUID():String(Date.now()+Math.random()),spanish:c.spanish.slice(0,500),translation:c.translation.slice(0,500)}));
+      if(!fresh.length){alert('Todas las palabras del Excel ya están cargadas.');return;}
+      localStorage.setItem(storageKey,JSON.stringify([...existing,...fresh]));alert(`Importación completada: ${fresh.length} palabras nuevas. Se han omitido los duplicados.`);location.reload();
+    }
   })();
   </script>
 </body></html>

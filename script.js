@@ -1,7 +1,9 @@
 /* Lingua — lógica de tarjetas, estudio, importación/exportación y tema. */
 (() => {
   "use strict";
-  const STORAGE_KEY = "lingua.cards.v1";
+  const LANGUAGE = localStorage.getItem("lingua.language.v1") === "en" ? "en" : "de";
+  const STORAGE_KEY = LANGUAGE === "en" ? "lingua.cards.en.v1" : "lingua.cards.de.v1";
+  const MISSED_KEY = LANGUAGE === "en" ? "lingua.missed.en.v1" : "lingua.missed.de.v1";
   const THEME_KEY = "lingua.theme.v1";
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -12,12 +14,12 @@
   let index = 0;
   let checked = false;
   function loadMissedIds() {
-    try { return new Set(JSON.parse(localStorage.getItem("lingua.missed.v1") || "[]")); }
+    try { return new Set(JSON.parse(localStorage.getItem(MISSED_KEY) || "[]")); }
     catch { return new Set(); }
   }
   let session = { correct: 0, wrong: 0, missedIds: loadMissedIds() };
   function persistMissedIds() {
-    try { localStorage.setItem("lingua.missed.v1", JSON.stringify([...session.missedIds])); } catch {}
+    try { localStorage.setItem(MISSED_KEY, JSON.stringify([...session.missedIds])); } catch {}
   }
   let toastTimer;
 
@@ -63,9 +65,10 @@
   function setTheme(next) {
     theme = next;
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.language = LANGUAGE;
     els.themeToggle.textContent = theme === "dark" ? "☀" : "☾";
     els.themeToggle.setAttribute("aria-label", theme === "dark" ? "Activar tema claro" : "Activar tema oscuro");
-    document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#11131d" : "#f7f8fc";
+    document.querySelector('meta[name="theme-color"]').content = theme === "dark" ? "#11131d" : (LANGUAGE === "en" ? "#eff6ff" : "#f7f8fc");
     localStorage.setItem(THEME_KEY, theme);
   }
   function switchView(view) {
@@ -74,7 +77,7 @@
     Object.entries(els.views).forEach(([name, node]) => node.hidden = name !== view);
     els.tabs.forEach(tab => tab.classList.toggle("active", tab.dataset.view === view));
     if (view === "cards") renderList();
-    if (view === "study") { els.studyTitle.textContent = els.studyMode.value === "errors" ? "Repasa tus errores" : "Translate the words"; els.studyEyebrow.textContent = els.studyMode.value === "errors" ? "MODO REPASO" : "MODO TEST"; startDeck(false); }
+    if (view === "study") { els.studyTitle.textContent = LANGUAGE === "en" ? (els.studyMode.value === "errors" ? "Review your mistakes" : "Translate the words") : (els.studyMode.value === "errors" ? "Repasa tus errores" : "Translate the words"); els.studyEyebrow.textContent = LANGUAGE === "en" ? (els.studyMode.value === "errors" ? "REVIEW MODE" : "TEST MODE") : (els.studyMode.value === "errors" ? "MODO REPASO" : "MODO TEST"); startDeck(false); }
     if (view === "add") setTimeout(() => els.spanishInput.focus({ preventScroll: true }), 80);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -83,7 +86,7 @@
     if (els.cardCountBadge) els.cardCountBadge.textContent = cards.length;
     els.accuracyStat.textContent = session.correct + session.wrong ? `${Math.round(session.correct / (session.correct + session.wrong) * 100)}%` : "—";
     els.errorsStat.textContent = session.missedIds.size;
-    els.sessionScore.textContent = `${session.correct} aciertos · ${session.wrong} fallos`;
+    els.sessionScore.textContent = LANGUAGE === "en" ? `${session.correct} correct · ${session.wrong} wrong` : `${session.correct} aciertos · ${session.wrong} fallos`;
   }
   function newSession() {
     session = { correct: 0, wrong: 0, missedIds: loadMissedIds() };
@@ -161,9 +164,10 @@
     }
     els.feedback.hidden = false;
     els.feedback.className = `feedback ${correct ? "correct" : "incorrect"}`;
+    // Mostrar siempre la forma correcta ayuda a fijar la palabra, también cuando se acierta.
     els.feedback.innerHTML = correct
-      ? "<strong>¡Correcto! ✨</strong> Buena memoria. Sigue así."
-      : `<strong>No del todo.</strong> La respuesta correcta es: <b>${escapeHTML(card.translation)}</b>`;
+      ? `<strong>${LANGUAGE === "en" ? "Correct! ✨" : "¡Correcto! ✨"}</strong> ${LANGUAGE === "en" ? "Good memory. The correct answer is:" : "Buena memoria. La palabra correcta es:"} <b class="answer-reveal">${escapeHTML(card.translation)}</b>`
+      : `<strong>${LANGUAGE === "en" ? "Not quite." : "No del todo."}</strong> ${LANGUAGE === "en" ? "The correct answer is:" : "La respuesta correcta es:"} <b class="answer-reveal">${escapeHTML(card.translation)}</b>`;
     els.answerInput.disabled = true;
     els.checkBtn.hidden = true;
     els.nextBtn.hidden = false;
@@ -271,12 +275,12 @@
   const exportExcelBtn = $("#exportExcelBtn");
   if (exportExcelBtn) exportExcelBtn.addEventListener("click", () => {
     if (!window.XLSX) { showToast("El lector de Excel necesita conexión a internet."); return; }
-    const rows = [["Español", "Alemán"], ...cards.map(card => [card.spanish, card.translation])];
+    const rows = [["Español", LANGUAGE === "en" ? "English" : "Alemán"], ...cards.map(card => [card.spanish, card.translation])];
     const sheet = XLSX.utils.aoa_to_sheet(rows);
     sheet["!cols"] = [{ wch: 34 }, { wch: 34 }];
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, "Vocabulario A1");
-    XLSX.writeFile(workbook, `vocabulario_aleman_actualizado_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, sheet, LANGUAGE === "en" ? "English A1" : "Vocabulario A1");
+    XLSX.writeFile(workbook, `vocabulario_${LANGUAGE === "en" ? "ingles" : "aleman"}_actualizado_${new Date().toISOString().slice(0,10)}.xlsx`);
     showToast("Excel actualizado preparado para descargar.");
   });
 

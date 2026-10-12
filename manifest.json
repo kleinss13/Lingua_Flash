@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Lingua — alemán a tu ritmo",
+  "name": "Lingua — Alemán e inglés A1",
   "short_name": "Lingua",
-  "description": "Aprende alemán con tests, palabras y repasos.",
+  "description": "Aprende alemán e inglés con tarjetas, tests y repasos.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

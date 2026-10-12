@@ -53,3 +53,7 @@ La validación ignora mayúsculas, tildes y algunos signos de puntuación. No ha
 - En **Añadir**, pulsa **Cargar Excel** para leer el Excel que está publicado junto a `index.html`, o **Elegir archivo** para seleccionar uno desde tu dispositivo.
 - Las palabras importadas y añadidas se guardan en el almacenamiento local de ese navegador. Los errores se conservan entre visitas en el mismo dispositivo.
 - En **Añadir**, pulsa **Descargar Excel actualizado** para exportar todas las tarjetas en un nuevo `.xlsx`. Después, sube ese archivo a GitHub si quieres que la versión publicada contenga también las palabras nuevas. GitHub Pages es estático: la app no puede escribir directamente sobre el Excel que ya está publicado.
+
+
+## Alemán e inglés
+La app permite cambiar entre DE · A1 (naranja) y EN · A1 (azul) desde el botón superior. Cada idioma guarda tarjetas y errores por separado. Mantén ambos Excel en la raíz del repositorio: `vocabulario_aleman_A1_lingua.xlsx` y `vocabulario_ingles_A1_lingua.xlsx`.
